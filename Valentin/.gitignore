@@ -1,0 +1,45 @@
+# Fichiers de compilation générés par LaTeX
+*.aux
+*.bbl
+*.blg
+*.idx
+*.ind
+*.lof
+*.lot
+*.out
+*.toc
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.ist
+*.fls
+*.log
+*.fdb_latexmk
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+# Fichiers spécifiques à Beamer
+*.nav
+*.snm
+*.vrb
+
+# Fichiers liés à la bibliographie (Biber)
+*.bcf
+*.run.xml
+
+# Fichiers de sortie (Optionnel mais recommandé pour éviter les conflits)
+*.pdf
+*.dvi
+*.ps
+
+# Fichiers de configuration de votre éditeur ou système d'exploitation
+.DS_Store
+*.swp
+.vscode/
+.idea/
+*.bak
+*.sav

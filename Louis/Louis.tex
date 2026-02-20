@@ -1,0 +1,188 @@
+\framewithtitle{Présentation de SICK}
+\section{Présentation de SICK}
+
+\begin{frame}{SICK en 2 mots}
+    \textbf{  } \textit{Edges}, \textit{Corners}, \textit{Scale-space}
+
+    \begin{block}{Idée générale}
+        Détecter les arêtes à plusieurs échelles, puis trouver les endroits où ces arêtes changent fortement de direction.
+    \end{block}
+
+    \[
+    \text{Coin} \;\Longleftrightarrow\; \text{changement de direction du gradient}
+    \]
+\end{frame}
+
+\begin{frame}{Détection d'arêtes à plusieurs échelles}
+    \textbf{  } \textit{Gradient}, \textit{CoM filter}
+
+    \[
+    G(t)=\sqrt{G_x(t)^2+G_y(t)^2}
+    \]
+
+    \begin{itemize}
+        \item Gradient calculé avec filtres CoM : tailles $3\times3$ à $17\times17$
+        \item Chaque taille = une \textbf{échelle}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Non Maximum Suppression (NMS)}
+    \textbf{  } \textit{Maxima}, \textit{Gradient}
+
+    \begin{block}{Principe}
+        On conserve un pixel d'arête seulement s'il est un maximum local
+        \begin{itemize}
+            \item dans la direction du gradient (2D)
+            \item entre échelles voisines (Scale-space)
+        \end{itemize}
+    \end{block}
+
+    \[
+    G(t) = \max(G(t-1),\, G(t),\, G(t+1))
+    \]
+\end{frame}
+
+\begin{frame}{Pyramide d'images}
+    \textbf{  } \textit{Multi-résolution}
+
+    \begin{itemize}
+        \item On crée plusieurs versions réduites de l'image
+        \item À chaque niveau : détection des arêtes + NMS
+    \end{itemize}
+
+    \[
+    I_0,\, I_1=\text{down}(I_0),\, I_2=\text{down}(I_1), ...
+    \]
+\end{frame}
+
+\begin{frame}{Organisation des arêtes en chaînes}
+    \textbf{  } \textit{Edge chains}
+
+    \begin{itemize}
+        \item Les pixels d'arêtes sont reliés en séquences 1D ordonnées
+        \item Permet de parcourir chaque arête comme un chemin
+    \end{itemize}
+
+    \[
+    \text{Chaîne} = \{p_1, p_2, ..., p_t\}
+    \]
+\end{frame}
+
+\begin{frame}{Cornerness le long d'une arête}
+    \textbf{  } \textit{Corner score}, \textit{Gradient direction}
+
+    \[
+    \mathbf{V}_l(t)=\sum_{i=t-w}^{t-1}\mathbf{g}(i)
+    \qquad
+    \mathbf{V}_r(t)=\sum_{i=t+1}^{t+w}\mathbf{g}(i)
+    \]
+
+    \[
+    C(t)=\frac{\|\mathbf{V}_r(t)-\mathbf{V}_l(t)\|}
+                 {\|\mathbf{V}_r(t)\|+\|\mathbf{V}_l(t)\|}
+    \]
+\end{frame}
+
+\begin{frame}{Sélection des coins}
+    \textbf{  } \textit{1D NMS}
+
+    \begin{itemize}
+        \item On applique le NMS \textbf{le long de chaque chaîne}
+        \item On garde les maxima de $C(t)$
+    \end{itemize}
+
+    \[
+    C(t)=\max(C(t-1), C(t), C(t+1))
+    \]
+\end{frame}
+
+\begin{frame}{Filtrage des points faibles}
+    \textbf{  } \textit{Threshold}
+
+    \begin{block}{Score final du point clé}
+        \[
+        S_k(t)=C(t)\,G(t)
+        \]
+    \end{block}
+
+    \begin{itemize}
+        \item On écarte les points avec un score trop faible
+        \item On garde les coins les plus stables
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Orientation des keypoints}
+    \textbf{  } \textit{Orientation}, \textit{Rotation invariance}
+
+    \[
+    \theta(t)=\operatorname{atan2}(G_y(t),\,G_x(t))
+    \]
+
+    \begin{itemize}
+        \item Orientation directement donnée par le gradient
+        \item Pas besoin d'histogrammes (plus simple que SIFT)
+    \end{itemize}
+\end{frame}
+
+\section{Performances de SICK}
+\framewithtitle{Performances de SICK}
+
+
+
+\section{Conclusion}
+\framewithtitle{Conclusion}
+\begin{frame}{Conclusion}
+
+
+    
+\end{frame}
+
+\begin{frame}{Sources} %[allowframebreaks] si trop de s
+\nocite*
+\tiny
+\bibliographystyle{apalike}
+\bibliography{ref}
+\end{frame}
+
+\begin{frame}{Limites de l'article}
+
+\begin{block}{Limites de l'article}
+    \begin{itemize}
+        \item Dataset utilisé dans l’article : benchmark datant de \textbf{2005} alors que l’article est publié en 2014.\\
+        $\rightarrow$ Résultats moins représentatifs face aux méthodes modernes.
+
+        \item SICK excellent pour \textbf{changement d’échelle} et \textbf{rotation},
+        mais seulement \textbf{moyen} pour le \textbf{viewpoint change} et \textbf{faible} en \textbf{illumination change}.
+
+        \item Méthode \textbf{non intégrée} dans OpenCV $\Rightarrow$ adoption limitée dans la communauté.
+    \end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Conclusion}
+
+\begin{block}{Conclusion de l'article}
+    \begin{itemize}
+        \item L’article propose une nouvelle méthode de détection de coins,
+        appelée \textbf{SICK}, basée sur l’analyse des \textbf{arêtes} et
+        le suivi de leurs \textbf{changements de direction}.
+
+        \item L’approche repose sur une combinaison efficace :
+        \begin{itemize}
+            \item détection d’arêtes multi-échelles,
+            \item organisation en chaînes 1D,
+            \item mesure locale de cornerness.
+        \end{itemize}
+
+        \item SICK offre une \textbf{invariance naturelle à l’échelle} 
+        et une excellente robustesse à la \textbf{rotation},
+        tout en restant computationnellement léger.
+
+        \item Les résultats expérimentaux montrent que SICK peut se
+        comparer favorablement aux détecteurs classiques, tout en
+        maintenant une structure algorithmique simple.
+    \end{itemize}
+\end{block}
+
+\end{frame}
