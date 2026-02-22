@@ -1,0 +1,57 @@
+\framewithtitle{Conclusion}
+
+\begin{frame}{Conclusion}
+\begin{block}{Le compromis clé}
+    \begin{itemize}
+        \item Quantification des poids du modèle $\longrightarrow$ efficacité de communication
+        \item Répartition non IID des données $\longrightarrow$ simulation plus réaliste
+        \item Autoencodeurs $\longrightarrow$ extraction de features non supervisée
+    \end{itemize}
+    \centering
+    \begin{minipage}{0.7\textwidth}
+        \begin{alertblock}{}
+            \centering
+            Moins bonne accuracy de classification
+        \end{alertblock}
+    \end{minipage}
+
+\end{block}
+
+\begin{block}{La fusion}
+    \begin{itemize}
+        \item Entrainement local optimisé $\longrightarrow$ ressources limitées des capteurs
+        \item Transmission uniquement des poids $\longrightarrow$ préservation de la vie privée
+        \item Aggrégation itérative $\longrightarrow$ combattre la non-IID des données
+    \end{itemize}
+    \centering
+    \begin{minipage}{0.9\textwidth}
+        \begin{alertblock}{}
+            \centering
+            Modèle global plus robuste et performant que les modèles locaux
+        \end{alertblock}
+    \end{minipage}
+\end{block}
+\end{frame}
+
+\begin{frame}{Conclusion}
+    \begin{block}{Perspectives de l'article}
+        \begin{itemize}
+            \item Première implémentation de cette approche
+            \item Utilisation de l'UAV $\longrightarrow$ nouvelle dimension de collecte de données
+            \item Extension à d'autres type de données plus réalistes
+        \end{itemize}
+    \end{block}
+    
+    \begin{block}{Limites de l'article et critiques}
+        \begin{itemize}
+            \item Trop focus sur la transmission des poids
+            \item Fusion très simple (moyenne pondérée) $\longrightarrow$ pas de prise en compte de la qualité des modèles locaux
+            \item Beaucoup d'erreurs et de manque de précision dans l'article
+        \end{itemize}
+    \end{block}
+
+    \begin{alertblock}{}
+        \centering
+        Bon POC mais pas assez détaillé pour être réplicable
+    \end{alertblock}
+\end{frame}
