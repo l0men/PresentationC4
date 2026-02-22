@@ -1,13 +1,207 @@
-\framewithtitle{Setup experimental}
-\subsection{Setup experimental}
+\framewithtitle{Architecture du Système et Méthodologie}
 
-\begin{frame}{Setup experimental}
+\subsection{L'architecture du modèle Autoencodeur}
+
+\begin{frame}{Architecture du modèle Autoencodeur}
+   
+\begin{columns}
+\column{0.5\textwidth}
+\vspace{20 pt}
+\begin{block}{Extraction de features}
+    Image $32*32*3 \Longrightarrow$ Espace latent
+    \begin{itemize}
+        \item Convolution 2D
+        \item Batch Normalization 2D
+        \item ReLU
+    \end{itemize}
+\end{block}
+
+\column{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{img/encodeur.png}
+    \caption{Encodeur convolutionel}
+    \label{fig:encodeur}
+\end{figure}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Architecture du modèle Autoencodeur}
+   
+\begin{columns}
+\column{0.5\textwidth}
+\vspace{20 pt}
+\begin{block}{Reconstruction de l'image}
+    Espace latent $\Longrightarrow$ Image $32*32*3 $
+    \begin{itemize}
+        \item Convolution 2D
+        \item Batch Normalization 2D
+        \item ReLU
+    \end{itemize}
+\end{block}
+
+\column{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{img/decoder.png}
+    \caption{Décodeur convolutionel}
+    \label{fig:decoder}
+\end{figure}
+\end{columns}
+\begin{block}{}
+    Opération inverse de l'encodeur $\longrightarrow$ reconstruire l'image à partir de l'espace latent.
+\end{block}
+\end{frame}
+
+\begin{frame}{Architecture du modèle Autoencodeur}
+   
+\begin{columns}
+\column{0.5\textwidth}
+
+\begin{block}{Classification}
+    Espace latent $\Longrightarrow$ Classe de l'image
+    \begin{itemize}
+        \item Flatten
+        \item Fully Connected Layer
+        \item Relu
+    \end{itemize}
+\end{block}
+
+\column{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{img/classifieur.png}
+    \caption{Classifieur}
+    \label{fig:classifieur}
+\end{figure}
+\end{columns}
+
+\vspace{20 pt}
+
+\begin{block}{}
+    Prédire la classe parmis les 10 classes de CIFAR-10.
+\end{block}
+\end{frame}
+
+\begin{frame}{Architecture du modèle Autoencodeur}
+
+    
+    \vspace{10 pt}
+    {\Large Métriques d'évaluation:}
+
+    \vspace{20 pt}
+
+    \begin{columns}
+    \column{0.3\textwidth}
+    \begin{block}{Décodeur}
+        Loss: \textbf{MSE}
+        Validation: \textit{MSE}
+    \end{block}
+    \column{0.3\textwidth}
+    \begin{block}{Classifieur}
+        Loss: \textit{Cross-Entropy}
+        Validation: \textbf{Accuracy}
+        
+    \end{block}
+    \column{0.3\textwidth}
+    \begin{block}{Encodeur}
+        Loss : \textit{custom loss}
+        Validation : \textit{custom}
+    \end{block}
+    \end{columns}
+
+    \begin{block}{}
+
+        Loss custom = $\alpha$ * Loss du décodeur + $\beta$ * Loss du classifieur
+    
+    \end{block}
+
+    \vspace{50 pt}
+
+    \text{loss}: annoncée dans l'article\\
+    \textit{loss}: déduite
+\end{frame}
+
+
+\subsection{Environnement de simulation}
+
+\begin{frame}{Environnement de simulation}
+    \begin{block}{}
+        Simuler la communication entre les capteurs et l'UAV 
+    \end{block}
+    \begin{columns}
+    \column{0.5\textwidth}
+
+    \vspace{40 pt}
+    \begin{block}{Simulation d'agrégation}
+        \begin{itemize}
+            \item grille de 300 * 300
+            \item 4 sensors 
+            \item 1 UAV
+            \item Framework \textbf{GrADyS-SIM NG}
+        \end{itemize}
+    \end{block}
+    \column{0.5\textwidth}
+        \begin{figure}
+        \centering
+        \includegraphics[width=1\textwidth]{img/gridvoid.png}
+        \end{figure}
+    \end{columns}
+
+\end{frame}
+
+
+\begin{frame}{Environnement de simulation}
     \begin{figure}
         \centering
-        \only<1>{\includegraphics[width=0.6\textwidth]{img/gridvoid.png}}%
-        \only<2>{\includegraphics[width=0.6\textwidth]{img/drone1.png}}%
-        \only<3>{\includegraphics[width=0.6\textwidth]{img/drone2.png}}%
-        \only<4>{\includegraphics[width=0.6\textwidth]{img/drone3.png}}%
-        \only<5>{\includegraphics[width=0.6\textwidth]{img/drone4.png}}%
+        \only<1>{\includegraphics[width=0.6\textwidth]{img/drone1.png}}%
+        \only<2>{\includegraphics[width=0.62\textwidth]{img/drone2.png}}%
+        \only<3>{\includegraphics[width=0.6\textwidth]{img/drone3.png}}%
+        \only<4>{\includegraphics[width=0.6\textwidth]{img/drone4.png}}%
     \end{figure}
+\end{frame}
+
+\begin{frame}{Répartition des données}
+    \begin{block}{CIFAR-10}
+        Images de 32*32*3 $\|$ 10 classes $\|$ 6000 images par classe
+    \end{block}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\textwidth]{img/repartition.png}
+    \end{figure}
+
+    \begin{block}{}
+        Simuler des données non-IID (non indépendantes et identiquement distribuées) entre les capteurs.
+    \end{block}
+    
+\end{frame}
+
+\begin{frame}{Aggrégation des modèles locaux}
+
+    \begin{block}<1->{Entrainement local (capteurs)}
+        Entrainement sur le dataset local durant $N$ epochs
+    \end{block}
+
+    \begin{block}<2->{Requête de communication (capteurs)}
+        À $N$ epochs on stoppe l'entrainement et attend l'UAV
+    \end{block}
+
+    \begin{block}<3->{Transmission des poids locaux (capteurs $\rightarrow$ UAV)}
+        On envoie envoie une version compressée des poids à l'UAV
+    \end{block}
+
+    \begin{block}<4->{Aggrégation des poids des modèles locaux (UAV)}
+        Moyenne des poids des sensors qui ont communiqué avec l'UAV
+    \end{block}
+
+    \begin{block}<5->{Distribution des nouveaux poids globaux (UAV $\rightarrow$ capteurs)}
+        L'UAV distribue les nouveaux poids globaux aux capteurs
+    \end{block}
+
+
+
+
+
+
 \end{frame}
