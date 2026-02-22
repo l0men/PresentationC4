@@ -199,9 +199,33 @@
         L'UAV distribue les nouveaux poids globaux aux capteurs
     \end{block}
 
+\end{frame}
 
+\begin{frame}[c]{Optimisation des communications}
 
+    \begin{columns}
+    \column{0.5\textwidth}
+    \begin{enumerate}
+        \item <1-> Entrainement local (QAT)
+        \item <2-> Quantification (-75\%)
+        \item <3-> Compression (gzip)
+        \item <4-> Décompression (lossless)
+        \item <5-> Aggrégation
+        \item <6-> Distribution
+        \item <7-> Mise à jour
+    \end{enumerate}
+    \column{0.5\textwidth}
+        \begin{figure}
 
-
-
+            \centering
+            \only<1>{\includegraphics[width=0.8\textwidth]{img/send0.png}}%
+            \only<2>{\includegraphics[width=0.8\textwidth]{img/send1.png}}%
+            \only<3>{\includegraphics[width=0.8\textwidth]{img/send2.png}}%
+            \only<4>{\includegraphics[width=0.8\textwidth]{img/send3.png}}%
+            \only<5>{\includegraphics[width=0.8\textwidth]{img/send4.png}}%
+            \only<6>{\includegraphics[width=0.8\textwidth]{img/send5.png}}%
+            \only<7>{\includegraphics[width=0.8\textwidth]{img/send0.png}}%
+        \end{figure}
+    \end{columns}
+    
 \end{frame}
