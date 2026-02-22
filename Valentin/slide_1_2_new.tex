@@ -1,0 +1,111 @@
+\section{Introduction et contexte de l'IoT}
+
+\begin{frame}{Contexte IoT}
+\begin{itemize}
+    \item Capteurs distribués
+    \item Données locales hétérogènes
+    \begin{itemize}
+        \item Non-IID
+        \item Peu annotées
+    \end{itemize}
+    \item Contraintes réseau
+    \begin{itemize}
+        \item Énergie
+        \item Bande passante
+        \item Confidentialité
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Apprentissage centralisé vs fédéré}
+
+\begin{columns}[T]
+
+\column{0.48\textwidth}
+
+{\small
+\textbf{Apprentissage centralisé}
+
+\vspace{2mm}
+\begin{itemize}
+    \item Données $\Rightarrow$ serveur central
+    \item Entraînement global
+\end{itemize}
+
+\vspace{3mm}
+{\bfseries Avantages :}
+\begin{itemize}
+    \item Haute précision
+    \item Convergence stable
+\end{itemize}
+
+\vspace{2mm}
+{\bfseries Inconvénients :}
+\begin{itemize}
+    \item Confidentialité
+    \item Bande passante
+    \item Latence
+\end{itemize}
+}
+
+\column{0.48\textwidth}
+
+{\small
+\textbf{Apprentissage fédéré}
+
+\vspace{2mm}
+\begin{itemize}
+    \item Entraînement local
+    \item Partage des poids
+    \item Agrégation globale
+\end{itemize}
+
+\vspace{3mm}
+{\bfseries Avantages :}
+\begin{itemize}
+    \item Bande passante réduite
+    \item Confidentialité
+    \item Adapté aux IoT
+\end{itemize}
+
+\vspace{2mm}
+{\bfseries Inconvénients :}
+\begin{itemize}
+    \item Données non-IID   
+    \item Hétérogénéités
+\end{itemize}
+}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Problématique \& Solution proposée}
+
+\textbf{\large Le défi :}
+\begin{itemize}
+    \item Données non étiquetées en continu
+    \item Capteurs difficiles d'accès
+    \item Annotation impossible $\Rightarrow$ Approche supervisée inadaptée
+\end{itemize}
+
+\vspace{0.4cm}
+
+\textbf{\large La solution novatrice :}
+\begin{itemize}
+    \item Federated learning (apprentissage décentralisé)
+    \item Autoencoder pour données non étiquetées
+    \item Agrégation décentralisée via UAV (drone)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Solution proposée par l'article}
+
+\vspace{-0.2cm}
+\begin{center}
+\includegraphics[width=0.72\textwidth]{img/composant.png}
+\end{center}
+\vspace{-0.2cm}
+
+\end{frame}

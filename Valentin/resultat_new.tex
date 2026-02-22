@@ -1,0 +1,102 @@
+\section{Résultats}
+
+\begin{frame}{Résultats : matrices de confusion}
+
+\begin{columns}[T]
+
+\column{0.48\textwidth}
+
+{\centering
+\textbf{Modèle supervisé}
+
+\includegraphics[width=0.85\linewidth]{img/confusion_supervise.png}
+}
+
+\vspace{0.2em}
+
+{\footnotesize
+\begin{itemize}
+    \item Classes mieux séparées
+    \item Moins d'erreurs
+    \item Prédictions nettes
+    \item Loss plus faible
+\end{itemize}
+}
+
+\column{0.48\textwidth}
+
+{\centering
+\textbf{Autoencodeur + classif.}
+
+\includegraphics[width=0.85\linewidth]{img/confusion_autoencoder.png}
+}
+
+\vspace{0.2em}
+
+{\footnotesize
+\begin{itemize}
+    \item Confusion entre classes
+    \item Prédictions moins confiantes
+    \item Accuracy plus faible
+    \item Compromis reconstruction/classif
+\end{itemize}
+}
+
+\end{columns}
+
+\vspace{0.2em}
+
+{\footnotesize
+\begin{itemize}
+    \item \textbf{Supervisé} : meilleure précision
+    \item \textbf{Autoencodeur} : moins précis mais adapté IoT
+\end{itemize}
+}
+
+\end{frame}
+
+\begin{frame}{Résultats t-SNE}
+
+\begin{columns}[T]
+
+\column{0.48\textwidth}
+
+{\centering
+\textbf{Modèle supervisé}
+
+\includegraphics[width=0.85\linewidth]{img/tsne_supervise.png}
+}
+
+\vspace{0.2em}
+
+{\footnotesize
+\begin{itemize}
+    \item Clusters bien séparés
+    \item Frontières nettes
+    \item Représentations spécialisées
+    \item Optimisé classification
+\end{itemize}
+}
+
+\column{0.48\textwidth}
+
+{\centering
+\textbf{Autoencodeur}
+
+\includegraphics[width=0.85\linewidth]{img/tsne_autoencoder.png}
+}
+
+\vspace{0.2em}
+
+{\footnotesize
+\begin{itemize}
+    \item Clusters plus diffus
+    \item Représentations générales
+    \item Apprentissage sans labels
+    \item Plus robuste non-IID
+\end{itemize}
+}
+
+\end{columns}
+
+\end{frame}
