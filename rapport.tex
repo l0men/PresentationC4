@@ -1,0 +1,471 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages de base
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{hyperref}
+
+% Mathématiques
+\usepackage{cancel}
+\usepackage{amsthm,amsmath,amsfonts,amssymb,dsfont}
+\usepackage{stmaryrd}
+
+% Mise en forme
+\usepackage[x11names]{xcolor}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+
+% Figures
+\usepackage{wrapfig}
+\usepackage{float}
+
+% Géométrie et titres
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Théorèmes
+\theoremstyle{plain}
+\newtheorem{Th}{Théorème}[section]
+\newtheorem{Lem}[Th]{Lemme}
+\newtheorem{Prop}[Th]{Proposition}
+\newtheorem*{Prop*}{Proposition}
+\newtheorem*{Cor}{Corollaire}
+
+\theoremstyle{definition}
+\newtheorem{Df}{Définition}[section]
+\newtheorem*{Df*}{Définition}
+\newtheorem{Ex}{Exemple}[section]
+\newtheorem*{Ex*}{Exemple}
+
+\theoremstyle{remark}
+\newtheorem*{NB}{Remarque}
+\newtheorem*{NBs}{Remarques}
+
+\title{UAV-Assisted Federated Learning with Autoencoders for IoT Image Classification\\
+\large Rapport détaillé}
+\author{Louis MENNRATH \and Valentin DAVID}
+\date{26 février 2026}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Introduction et contexte de l'IoT}
+
+L'Internet des Objets (IoT) a profondément transformé la façon dont nous collectons et traitons les données dans des environnements distribués. Les réseaux IoT modernes sont caractérisés par un ensemble de capteurs distribués qui génèrent des volumes importants de données locales. Ces données présentent des caractéristiques particulières qui posent des défis uniques pour l'apprentissage automatique.
+
+Tout d'abord, les données collectées par les capteurs IoT sont souvent \textbf{hétérogènes et non-IID} (non indépendantes et identiquement distribuées). Chaque capteur peut observer des phénomènes différents selon son emplacement géographique, son environnement local ou ses conditions d'opération. Cette hétérogénéité rend difficile l'application des techniques d'apprentissage automatique traditionnelles qui supposent généralement une distribution uniforme des données.
+
+De plus, les données collectées sont souvent \textbf{peu ou pas annotées}. Dans de nombreux scénarios IoT, il est impossible ou impratique d'étiqueter manuellement les données en raison de la quantité massive d'informations générées en continu, de l'inaccessibilité physique des capteurs, ou du coût prohibitif de l'annotation manuelle.
+
+Enfin, les réseaux IoT fonctionnent sous des \textbf{contraintes importantes} en termes de ressources :
+\begin{itemize}
+    \item \textbf{Énergie} : Les capteurs sont souvent alimentés par batterie et doivent minimiser leur consommation énergétique.
+    \item \textbf{Bande passante} : La transmission de grandes quantités de données brutes vers un serveur central peut saturer le réseau et consommer beaucoup d'énergie.
+    \item \textbf{Confidentialité} : La transmission de données brutes peut poser des problèmes de vie privée, notamment dans des applications médicales ou de surveillance.
+\end{itemize}
+
+\subsection{Apprentissage centralisé versus apprentissage fédéré}
+
+Face à ces défis, deux paradigmes d'apprentissage automatique se distinguent : l'apprentissage centralisé et l'apprentissage fédéré.
+
+\subsubsection{Apprentissage centralisé}
+
+Dans l'approche centralisée traditionnelle, toutes les données sont transmises depuis les capteurs vers un serveur central où l'entraînement du modèle est effectué de manière globale. Cette approche présente plusieurs avantages :
+\begin{itemize}
+    \item \textbf{Haute précision} : L'accès à l'ensemble des données permet d'entraîner des modèles très performants.
+    \item \textbf{Convergence stable} : L'optimisation sur un dataset centralisé est généralement plus stable et prévisible.
+\end{itemize}
+
+Cependant, l'apprentissage centralisé souffre de limitations importantes dans le contexte IoT :
+\begin{itemize}
+    \item \textbf{Problèmes de confidentialité} : La transmission de toutes les données brutes vers un serveur central expose les informations sensibles.
+    \item \textbf{Bande passante excessive} : Le transfert de grandes quantités de données brutes consomme énormément de bande passante réseau.
+    \item \textbf{Latence élevée} : La collecte et le traitement centralisé introduisent des délais importants dans le système.
+\end{itemize}
+
+\subsubsection{Apprentissage fédéré}
+
+L'apprentissage fédéré propose une alternative décentralisée où l'entraînement se déroule localement sur chaque capteur. Plutôt que de transmettre les données brutes, seuls les poids du modèle sont partagés et agrégés au niveau global. Cette approche présente des avantages considérables pour les applications IoT :
+\begin{itemize}
+    \item \textbf{Bande passante réduite} : Seuls les paramètres du modèle sont transmis, ce qui représente un volume de données bien inférieur aux données brutes.
+    \item \textbf{Préservation de la confidentialité} : Les données sensibles restent sur les capteurs et ne sont jamais transmises.
+    \item \textbf{Adapté aux contraintes IoT} : L'approche est naturellement compatible avec les limitations des réseaux de capteurs.
+\end{itemize}
+
+Néanmoins, l'apprentissage fédéré comporte aussi des inconvénients :
+\begin{itemize}
+    \item \textbf{Données non-IID} : L'hétérogénéité des données locales peut ralentir la convergence et réduire la performance du modèle global.
+    \item \textbf{Hétérogénéités} : Les différences de capacité de calcul et de qualité des données entre capteurs peuvent compliquer l'agrégation.
+\end{itemize}
+
+\section{Problématique et Solution Proposée}
+
+\subsection{Le défi posé par les données non étiquetées}
+
+Dans le contexte des réseaux IoT, nous sommes confrontés à un défi particulièrement complexe. Les capteurs déployés génèrent des \textbf{données non étiquetées en continu}, souvent dans des environnements difficiles d'accès où l'intervention humaine est rare ou impossible. Par exemple, des capteurs installés dans des zones reculées, des infrastructures industrielles ou des environnements hostiles peuvent être physiquement inaccessibles pour une annotation manuelle.
+
+Cette situation rend l'approche supervisée traditionnelle totalement inadaptée. Sans étiquettes, il est impossible d'entraîner des classificateurs supervisés classiques qui nécessitent des paires (donnée, étiquette) pour l'apprentissage. De plus, le coût et la complexité logistique de l'annotation manuelle à grande échelle sont prohibitifs.
+
+\subsection{La solution novatrice proposée}
+
+Pour surmonter ces obstacles, l'article propose une approche innovante qui combine trois éléments clés :
+
+\begin{enumerate}
+    \item \textbf{Federated Learning (apprentissage décentralisé)} : L'entraînement se fait localement sur chaque capteur, ce qui préserve la confidentialité des données et réduit drastiquement la bande passante nécessaire.
+    
+    \item \textbf{Autoencodeur pour données non étiquetées} : Plutôt que d'utiliser un apprentissage supervisé classique qui nécessite des labels, l'approche repose sur des autoencodeurs capables d'apprendre des représentations utiles de manière non supervisée. L'autoencodeur apprend à reconstruire l'image d'entrée, ce qui force le modèle à extraire des caractéristiques pertinentes sans avoir besoin d'annotations.
+    
+    \item \textbf{Agrégation décentralisée via UAV (drone)} : Un véhicule aérien sans pilote (UAV) se déplace de capteur en capteur pour collecter les poids des modèles locaux, les agréger, puis redistribuer le modèle global mis à jour. Cette approche est particulièrement adaptée aux environnements où les capteurs sont géographiquement dispersés et où une infrastructure réseau centralisée n'est pas disponible.
+\end{enumerate}
+
+Cette solution permet de combiner les avantages de l'apprentissage fédéré (confidentialité, efficacité de la bande passante) avec la capacité de traiter des données non étiquetées grâce aux autoencodeurs, tout en utilisant un UAV pour faciliter la communication dans des environnements difficiles.
+
+\section{Architecture du Système et Méthodologie}
+
+\subsection{Architecture du modèle Autoencodeur}
+
+
+
+Le modèle proposé repose sur une architecture d'autoencodeur convolutionnel composée de trois parties principales : l'encodeur, le décodeur et le classifieur.
+
+\bigskip
+
+Cette arcitecture duale permet un aprentissage non supervisé de l'extraction des caractéristiques via la paire encodeur/décodeur ce qui permet de répondre au problème de données non étiquetées. En parallèle, la branche de classification permet d'évaluer la qualité des représentations apprises dans l'espace latent en les utilisant pour une tâche de classification supervisée. Cette configuration permet d'obtenir des représentations utiles pour la reconstruction tout en étant informatives pour la classification, ce qui est crucial dans un contexte où les données sont hétérogènes et non étiquetées.
+
+\subsubsection{L'Encodeur : Extraction de features}
+
+L'encodeur a pour fonction de transformer une image d'entrée de dimension $32 \times 32 \times 3$ (format CIFAR-10) vers un espace latent de dimension réduite. Cette compression force le modèle à apprendre les caractéristiques les plus pertinentes de l'image.
+
+L'architecture de l'encodeur utilise une séquence de couches convolutionnelles suivies de normalisation par batch et d'activation ReLU :
+\begin{itemize}
+    \item \textbf{Convolution 2D} : Extrait les motifs locaux et les caractéristiques spatiales de l'image.
+    \item \textbf{Batch Normalization 2D} : Normalise les activations pour stabiliser et accélérer l'entraînement.
+    \item \textbf{Activation ReLU} : Introduit de la non-linéarité dans le modèle, permettant d'apprendre des représentations complexes.
+\end{itemize}
+
+L'espace latent obtenu constitue une représentation compressée et informative de l'image d'entrée, capturant les caractéristiques essentielles tout en réduisant la dimensionnalité.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/encodeur.png}
+    \caption{Architecture de l'encodeur convolutionnel}
+\end{figure}
+
+\subsubsection{Le Décodeur : Reconstruction de l'image}
+
+Le décodeur effectue l'opération inverse de l'encodeur : il reconstruit l'image originale $32 \times 32 \times 3$ à partir de la représentation compressée dans l'espace latent.
+
+L'architecture du décodeur utilise également une succession de couches :
+\begin{itemize}
+    \item \textbf{Convolution 2D} (ou convolution transposée) : Effectue un upsampling progressif pour retrouver les dimensions spatiales originales.
+    \item \textbf{Batch Normalization 2D} : Stabilise l'entraînement du décodeur.
+    \item \textbf{Activation ReLU} : Maintient la non-linéarité nécessaire pour une reconstruction de qualité.
+\end{itemize}
+
+La qualité de la reconstruction est mesurée par la \textbf{Mean Squared Error (MSE)} entre l'image originale et l'image reconstruite. Cette métrique encourage le modèle à préserver l'information importante dans l'espace latent.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/decoder.png}
+    \caption{Architecture du décodeur convolutionnel}
+\end{figure}
+
+\subsubsection{Le Classifieur : Classification à partir de l'espace latent}
+
+En plus de la reconstruction, le modèle intègre une branche de classification qui prédit la classe de l'image à partir de sa représentation dans l'espace latent.
+
+L'architecture du classifieur comprend :
+\begin{itemize}
+    \item \textbf{Flatten} : Aplatit la représentation spatiale de l'espace latent en un vecteur unidimensionnel.
+    \item \textbf{Fully Connected Layer} : Couche dense qui combine les caractéristiques pour la classification.
+    \item \textbf{Activation ReLU} : Non-linéarité avant la couche de sortie.
+    \item \textbf{Couche de sortie} : Produit les probabilités pour les 10 classes de CIFAR-10.
+\end{itemize}
+
+Le classifieur est entraîné en utilisant la \textbf{Cross-Entropy Loss} et évalué selon la métrique d'\textbf{Accuracy} (précision de classification).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/classifieur.png}
+    \caption{Architecture du classifieur convolutionnel}
+\end{figure}
+
+\subsubsection{Fonction de perte combinée}
+
+Dans l'article il est clair que l'entraînement du décodeur est fait avec la MSE comme loss et la validation du classiefieur avec l'accuracy mais on n'a ni information sur la loss utilisée pour le classifieur ni sur la manière dont les deux branches sont combinées. Il est de bon sens de supposer que la Cross-Entropy Loss est utilisée pour le classifieur et que les deux branches sont entraînées simultanément avec une fonction de perte combinée du type :
+\[
+\mathcal{L}_{\text{total}} = \alpha \cdot \mathcal{L}_{\text{reconstruction}} + \beta \cdot \mathcal{L}_{\text{classification}}
+\]
+
+Ce type de fonction de perte est cpourrament utilisée pour des optimisations multi-objectifs, où $\alpha$ et $\beta$ sont des hyperparamètres qui équilibrent l'importance relative de la reconstruction et de la classification. L'entraînement simultané permet au modèle d'apprendre des représentations dans l'espace latent qui sont à la fois utiles pour la reconstruction et discriminantes pour la classification.
+
+\subsection{Environnement de simulation}
+
+Pour valider l'approche proposée, un environnement de simulation a été mis en place pour reproduire de manière réaliste la communication entre les capteurs et l'UAV.
+
+\subsubsection{Configuration de la simulation}
+
+L'environnement de simulation présente les caractéristiques suivantes :
+\begin{itemize}
+    \item \textbf{Grille spatiale} : Une zone de $300 \times 300$ unités représentant l'environnement de déploiement. (\textit{Le papier dit $200 \times 200$ mais cela semble être une coquille car ce n'est pas compatible avec les position des capteurs données par la suite})
+    \item \textbf{4 capteurs} : Positionnés à différents emplacements dans la grille, chacun disposant d'un dataset local.
+    \item \textbf{1 UAV} : Un drone qui se déplace dans l'environnement pour collecter et distribuer les modèles.
+    \item \textbf{Framework GrADyS-SIM NG} : Un framework de simulation spécialisé pour les systèmes de drones et de capteurs au sol.
+\end{itemize}
+
+\bigskip
+
+Le protocole de communication simulé comprend plusieurs étapes :
+\begin{enumerate}
+    \item L'UAV démarre depuis une position initiale et planifie sa trajectoire pour visiter tous les capteurs.
+    \item À chaque visite, l'UAV se connecte au capteur, récupère ses poids de modèle mis à jour.
+    \item Après avoir collecté les poids de tous les capteurs disponibles, l'UAV effectue l'agrégation.
+    \item L'UAV redistribue ensuite le modèle global mis à jour à chaque capteur lors d'une seconde tournée.
+\end{enumerate}
+
+Cette simulation permet d'évaluer non seulement la performance du modèle, mais aussi l'efficacité du protocole de communication dans un scénario réaliste, en simulant les contraintes de bande passante et de latence typiques des environnements réels.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/drone1.png}
+        \caption{Collecte auprès du capteur 1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/drone2.png}
+        \caption{Collecte auprès du capteur 2}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/drone3.png}
+        \caption{Collecte auprès du capteur 3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/drone4.png}
+        \caption{Collecte auprès du capteur 4}
+    \end{subfigure}
+    \caption{Parcours de l'UAV pour la collecte des modèles locaux}
+    \label{fig:uav-collecte}
+\end{figure}
+
+\subsubsection{Répartition des données CIFAR-10}
+
+Le dataset CIFAR-10 est utilisé pour l'expérimentation. Il contient :
+\begin{itemize}
+    \item 60 000 images en couleur de dimension $32 \times 32 \times 3$
+    \item 10 classes différentes (avion, automobile, oiseau, chat, cerf, chien, grenouille, cheval, bateau, camion)
+    \item 6 000 images par classe
+\end{itemize}
+
+Pour simuler un scénario réaliste de données \textbf{non-IID}, le dataset est réparti de manière hétérogène entre les 4 capteurs. Chaque capteur reçoit une distribution déséquilibrée des classes, ce qui signifie qu'un capteur peut avoir beaucoup d'exemples de certaines classes et très peu d'autres. Cette répartition non uniforme reflète les conditions réelles où chaque capteur observe des phénomènes différents selon son emplacement.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/repartition.png}
+    \caption{Répartition non-IID des données entre les capteurs}
+\end{figure}
+
+\subsection{Modèle de fusion et agrégation}
+
+\subsubsection{Processus d'entraînement et d'agrégation}
+
+Le processus d'apprentissage fédéré suit un cycle itératif comprenant les étapes suivantes :
+
+\begin{enumerate}
+    \item \textbf{Entraînement local} : Chaque capteur entraîne son modèle local sur son dataset pendant $N$ epochs. Durant cette phase, le capteur optimise les poids de son autoencodeur en utilisant la fonction de perte combinée.
+    
+    \item \textbf{Requête de communication} : Après $N$ epochs d'entraînement local, le capteur stoppe la mise à jour de son modèle et entre en mode attente, signalant qu'il est prêt à communiquer avec l'UAV.
+    
+    \item \textbf{Transmission des poids locaux} : Lorsque l'UAV arrive à proximité, le capteur transmet une version compressée de ses poids au drone. Cette compression est essentielle pour réduire le temps et l'énergie nécessaires à la transmission.
+    
+    \item \textbf{Agrégation des modèles locaux} : L'UAV collecte les poids de tous les capteurs qui ont communiqué avec lui, puis calcule la moyenne pondérée de ces poids. Cette agrégation suit l'algorithme \textbf{FedAvg} (Federated Averaging), qui calcule une moyenne des paramètres des modèles locaux. (\textit{L'article ne mentionne pas explicitant la méthode de fusion, on sait juste qu'il fait la moyenne des poids, FedAvg est une méthode classique en federated learning})
+    
+    \item \textbf{Distribution des poids globaux} : Une fois l'agrégation effectuée, l'UAV redistribue le nouveau modèle global à tous les capteurs.
+    
+    \item \textbf{Mise à jour et reprise de l'entraînement} : Chaque capteur met à jour son modèle local avec les nouveaux poids globaux, puis reprend l'entraînement local pour une nouvelle itération.
+\end{enumerate}
+
+\subsubsection{Fusion itérative pour combattre la non-IID}
+
+L'approche utilise une \textbf{fusion itérative} basée sur l'algorithme FedAvg. Ce processus itératif est crucial pour surmonter les défis posés par la distribution non-IID des données :
+\begin{itemize}
+    \item À chaque itération, l'agrégation permet de combiner les connaissances apprises localement par chaque capteur.
+    \item Les poids globaux redistribués incorporent des informations de toutes les distributions locales, ce qui aide chaque capteur à généraliser au-delà de ses données locales biaisées.
+    \item Au fil des itérations, le modèle global converge vers une solution qui performe bien sur l'ensemble des distributions, malgré l'hétérogénéité initiale.
+\end{itemize}
+
+\bigskip
+
+Ainsi le modèles global qui emergera sera redistribué à tous les capteur et aura appris sur toutes les classes présente dans le dataset original.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/tr6.png}
+    \caption{Fusion des données au sein de l'UAV}
+\end{figure}
+
+\subsubsection{Optimisation des communications}
+
+La réduction de la bande passante est un objectif majeur du système. Pour cela, plusieurs techniques sont mises en œuvre :
+
+\begin{enumerate}
+    \item \textbf{Entraînement avec Quantization-Aware Training (QAT)} : Le modèle est entraîné en tenant compte de la quantification future, ce qui améliore sa robustesse à la perte de précision.
+    
+    \item \textbf{Quantification des poids} : Les poids du modèle sont quantifiés (typiquement de float32 à int8), ce qui réduit la taille des données de \textbf{75\%}.
+    
+    \item \textbf{Compression avec gzip} : Après quantification, les poids sont compressés avec un algorithme de compression sans perte (gzip) pour réduire davantage la taille de transmission.
+    
+    \item \textbf{Décompression} : À la réception, l'UAV ou le capteur décompresse les données de manière lossless, récupérant exactement les poids quantifiés.
+    
+    \item \textbf{Agrégation} : L'UAV agrège les poids décompressés selon l'algorithme FedAvg.
+    
+    \item \textbf{Distribution} : Les poids globaux sont à nouveau compressés pour la redistribution vers les capteurs.
+    
+    \item \textbf{Mise à jour locale} : Chaque capteur décompresse et charge les nouveaux poids dans son modèle.
+\end{enumerate}
+
+Cette chaîne d'optimisation permet de réduire significativement le volume de données échangées, ce qui est crucial pour minimiser la consommation énergétique et le temps de communication dans un contexte IoT à ressources limitées. Néanmoins cette compression à un coût qui impactera la précision du modèle, d'où le compromis à trouver entre efficacité de communication et performance du modèle.
+
+\section{Résultats Expérimentaux}
+
+Les expérimentations menées comparent les performances du modèle basé sur autoencodeur avec un modèle supervisé classique, afin d'évaluer le compromis entre performance et capacité à fonctionner sans labels.
+
+\subsection{Analyse des matrices de confusion}
+
+Les matrices de confusion fournissent une visualisation détaillée des performances de classification pour chaque classe du dataset CIFAR-10.
+
+\subsubsection{Modèle supervisé}
+
+Le modèle supervisé entraîné de manière classique avec des labels présente les caractéristiques suivantes :
+\begin{itemize}
+    \item \textbf{Classes mieux séparées} : Les prédictions sont concentrées sur la diagonal de la matrice, indiquant une forte capacité à distinguer correctement les différentes classes.
+    \item \textbf{Moins d'erreurs de classification} : Le nombre de faux positifs et faux négatifs est relativement faible.
+    \item \textbf{Prédictions nettes et confiantes} : Le modèle produit des probabilités élevées pour la classe correcte.
+    \item \textbf{Loss plus faible} : L'optimisation directe pour la classification produit des valeurs de loss inférieures.
+\end{itemize}
+
+\subsubsection{Autoencodeur avec classification}
+
+Le modèle basé sur autoencodeur montre des résultats différents :
+\begin{itemize}
+    \item \textbf{Confusion accrue entre certaines classes} : La matrice présente plus d'éléments hors diagonale, indiquant des erreurs de classification plus fréquentes.
+    \item \textbf{Prédictions moins confiantes} : Les probabilités sont moins affirmées, reflétant une incertitude plus élevée.
+    \item \textbf{Accuracy réduite} : La précision globale est inférieure à celle du modèle supervisé.
+    \item \textbf{Compromis reconstruction/classification} : Le modèle doit équilibrer deux objectifs, ce qui peut limiter sa performance pure en classification.
+\end{itemize}
+
+\subsubsection{Interprétation}
+
+La comparaison montre clairement que le modèle supervisé offre une meilleure précision de classification, ce qui est attendu puisqu'il est directement optimisé pour cette tâche avec des labels disponibles. Cependant, l'autoencodeur, bien que moins précis, reste une solution viable et même nécessaire dans les contextes IoT où les labels ne sont pas disponibles. Le compromis entre précision et capacité à fonctionner sans supervision est au cœur de l'approche proposée.
+
+\subsection{Analyse t-SNE des représentations}
+
+La technique t-SNE (t-distributed Stochastic Neighbor Embedding) est utilisée pour visualiser en 2D les représentations apprises dans l'espace latent des deux modèles.
+
+\subsubsection{Modèle supervisé}
+
+La visualisation t-SNE du modèle supervisé révèle :
+\begin{itemize}
+    \item \textbf{Clusters bien séparés} : Les points correspondant à chaque classe forment des groupes distincts et compacts.
+    \item \textbf{Frontières nettes entre classes} : Il y a peu de chevauchement entre les différentes régions de l'espace latent.
+    \item \textbf{Représentations spécialisées} : L'espace latent est fortement structuré pour maximiser la séparabilité des classes.
+    \item \textbf{Optimisation pour la classification} : L'entraînement supervisé force le modèle à créer des représentations distinctives.
+\end{itemize}
+
+\subsubsection{Autoencodeur}
+
+Pour l'autoencodeur, la visualisation t-SNE montre :
+\begin{itemize}
+    \item \textbf{Clusters plus diffus} : Les groupes de classes sont moins compacts et présentent plus de dispersion.
+    \item \textbf{Représentations plus générales} : L'espace latent capture des caractéristiques générales utiles pour la reconstruction, pas uniquement pour la discrimination.
+    \item \textbf{Apprentissage sans labels} : Les structures émergent naturellement de l'objectif de reconstruction, sans guidance explicite par les classes.
+    \item \textbf{Robustesse potentielle au non-IID} : Les représentations moins spécialisées peuvent mieux généraliser à de nouvelles distributions de données.
+\end{itemize}
+
+\subsubsection{Implications}
+
+L'analyse t-SNE confirme que le modèle supervisé apprend des représentations hautement discriminantes, optimales pour la classification. En revanche, l'autoencodeur développe des représentations plus générales qui capturent l'essence de la reconstruction d'image. Bien que ces représentations soient moins optimales pour la classification pure, elles présentent l'avantage d'être apprises sans supervision et pourraient être plus robustes face à des changements de distribution, un atout important dans les environnements IoT hétérogènes.
+
+\section{Conclusion}
+
+\subsection{Les compromis clés de l'approche}
+
+L'article présente une approche innovante qui intègre plusieurs techniques pour surmonter les défis de l'apprentissage automatique dans les réseaux IoT. Trois compromis principaux émergent de cette étude :
+
+\subsubsection{Quantification des poids vs. précision}
+
+La \textbf{quantification des poids du modèle} permet une réduction significative de la bande passante nécessaire pour la communication. En convertissant les poids de float32 à int8, le volume de données est réduit de 75\%, ce qui améliore considérablement l'efficacité énergétique et la rapidité des échanges. Toutefois, cette compression s'accompagne d'une légère perte de précision numérique, bien que l'utilisation du Quantization-Aware Training permette de limiter l'impact sur les performances du modèle mais l'article ne décrit pas exactement comment cette technique est implémentée.
+
+\subsubsection{Données non-IID vs. réalisme}
+
+La \textbf{répartition non-IID des données} entre les capteurs rend la simulation beaucoup plus réaliste, reflétant les conditions réelles où chaque capteur observe des distributions différentes. Cependant, cette hétérogénéité complique la convergence du modèle global et peut réduire les performances par rapport à un scénario idéalisé avec des données uniformément distribuées. L'utilisation de la fusion itérative (FedAvg) permet de partiellement atténuer cet effet.
+
+\subsubsection{Autoencodeurs vs. accuracy de classification}
+
+L'utilisation d'\textbf{autoencodeurs pour l'extraction de features non supervisée} permet au système de fonctionner sans labels, ce qui est essentiel dans les environnements IoT où l'annotation est impossible. Néanmoins, ce choix entraîne une \textbf{accuracy de classification inférieure} comparée à un modèle supervisé classique. Ce compromis est acceptable dans le contexte où la supervision n'est tout simplement pas disponible.
+
+\subsection{La fusion et l'agrégation distribuée}
+
+L'approche proposée combine plusieurs innovations pour créer un système complet et cohérent :
+
+\begin{itemize}
+    \item \textbf{Entraînement local optimisé} : Chaque capteur effectue l'apprentissage localement, ce qui respecte les ressources limitées en termes de puissance de calcul et d'énergie.
+    
+    \item \textbf{Transmission uniquement des poids} : Plutôt que de transmettre les données brutes (potentiellement sensibles et volumineuses), seuls les paramètres du modèle sont échangés, préservant ainsi la vie privée tout en réduisant la bande passante.
+    
+    \item \textbf{Agrégation itérative pour combattre la non-IID} : Le processus de fusion répété permet au modèle global de progressivement intégrer les spécificités de toutes les distributions locales, produisant un modèle qui est globalement plus robuste et performant que n'importe quel modèle local isolé.
+\end{itemize}
+
+\bigskip 
+
+Ce dernier point est particulièrement important : bien que chaque modèle local soit limité par son dataset restreint et biaisé, le modèle global agrégé bénéficie de la diversité des données collectées par tous les capteurs. Ainsi, le modèle global surpasse les modèles locaux en termes de généralisation et de robustesse. (\textit{Même si il n'y a pas de comparaison explicite on doit faire confiance aux auteurs})
+
+\subsection{Perspectives et contributions de l'article}
+
+L'article présente plusieurs contributions importantes :
+
+\begin{itemize}
+    \item \textbf{Première implémentation de cette approche} : La combinaison d'apprentissage fédéré, d'autoencodeurs et d'agrégation par UAV dans un contexte IoT constitue une approche novatrice.
+    
+    \item \textbf{Utilisation d'UAV pour la collecte} : L'introduction d'un drone comme médiateur de communication ouvre une nouvelle dimension pour la collecte décentralisée de données dans des environnements où l'infrastructure réseau traditionnelle est absente ou limitée.
+    
+    \item \textbf{Extension possible à d'autres types de données} : Bien que l'article se concentre sur la classification d'images CIFAR-10, la méthodologie pourrait être étendue à des applications plus réalistes telles que la surveillance environnementale, l'agriculture de précision, ou la surveillance industrielle.
+\end{itemize}
+
+\subsection{Limites et critiques}
+
+Malgré ses contributions, l'article présente certaines limites :
+
+\begin{itemize}
+    \item \textbf{Focus excessif sur la transmission} : L'article met beaucoup l'accent sur l'optimisation de la communication (quantification, compression), mais moins sur l'amélioration de la qualité du modèle lui-même.
+    
+    \item \textbf{Fusion très simple} : L'agrégation par moyenne pondérée (FedAvg) ne prend pas en compte la qualité ou la fiabilité des modèles locaux. Des approches plus sophistiquées pourraient pondérer différemment les contributions selon la performance locale ou la quantité de données disponibles.
+    
+    \item \textbf{Manque de précision et erreurs} : L'article contient plusieurs imprécisions dans les descriptions des méthodes et des résultats, ce qui rend difficile la réplication exacte de l'expérience. Certains détails techniques importants sont omis ou peu clairs mais des recherches externe peuvent permettre de déduire les choix faits par les auteurs en se basant sur les approches classiques.
+\end{itemize}
+
+\subsection{Verdict final}
+
+L'article constitue un \textbf{bon Proof of Concept (POC)} qui démontre la faisabilité de combiner apprentissage fédéré, autoencodeurs et communication par UAV dans un contexte IoT. L'approche proposée offre une solution viable pour des scénarios où les données sont distribuées, non étiquetées et où la confidentialité et l'efficacité énergétique sont primordiales.
+
+Cependant, l'article n'est \textbf{pas suffisamment détaillé pour être pleinement réplicable}. Des informations supplémentaires sur l'architecture exacte des modèles, les hyperparamètres utilisés, et les protocoles de communication seraient nécessaires pour permettre une reproduction fidèle des résultats.
+
+En conclusion, cette recherche ouvre des perspectives intéressantes pour l'apprentissage automatique distribué dans les réseaux IoT, mais nécessiterait des développements supplémentaires et une documentation plus rigoureuse pour être applicable dans des déploiements réels à grande échelle.
+
+\end{document}
