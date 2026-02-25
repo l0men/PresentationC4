@@ -59,71 +59,73 @@
 
 \section{Introduction et contexte de l'IoT}
 
-L'Internet des Objets (IoT) a profondément transformé la façon dont nous collectons et traitons les données dans des environnements distribués. Les réseaux IoT modernes sont caractérisés par un ensemble de capteurs distribués qui génèrent des volumes importants de données locales. Ces données présentent des caractéristiques particulières qui posent des défis uniques pour l'apprentissage automatique.
 
-Tout d'abord, les données collectées par les capteurs IoT sont souvent \textbf{hétérogènes et non-IID} (non indépendantes et identiquement distribuées). Chaque capteur peut observer des phénomènes différents selon son emplacement géographique, son environnement local ou ses conditions d'opération. Cette hétérogénéité rend difficile l'application des techniques d'apprentissage automatique traditionnelles qui supposent généralement une distribution uniforme des données.
+L'IoT (internet des objets) est depuis quelques années de plus en plus présent et amène des défis dans beaucoup de domaines. Elle produit beaucoup de données, des données qui sont très hétérogènes et non-IID (non indépendantes et identiquement distribuées), ce qui amène à des défis importants en termes d'apprentissage automatique. Ces défis sont amplifiés par le volume important des données généré par l'IoT.  
+Dans notre cas, chaque capteur peut observer des phénomènes différents selon son emplacement géographique, son environnement local ou ses conditions d'opération. Cette hétérogénéité rend difficile l'application des techniques d'apprentissage automatique traditionnelles qui supposent généralement une distribution uniforme des données.
 
-De plus, les données collectées sont souvent \textbf{peu ou pas annotées}. Dans de nombreux scénarios IoT, il est impossible ou impratique d'étiqueter manuellement les données en raison de la quantité massive d'informations générées en continu, de l'inaccessibilité physique des capteurs, ou du coût prohibitif de l'annotation manuelle.
+De plus, les données collectées sont souvent \textbf{peu ou pas annotées}. Dans ce contexte, il est particulièrement difficile de labelliser les données récupérées, notamment à cause du volume important de données, de la difficulté d'accès aux données (capteurs en milieux difficiles) ou encore à cause du coût engendré. 
 
-Enfin, les réseaux IoT fonctionnent sous des \textbf{contraintes importantes} en termes de ressources :
+Enfin, les réseaux IoT fonctionnent sous des contraintes en termes de ressources :
+
 \begin{itemize}
-    \item \textbf{Énergie} : Les capteurs sont souvent alimentés par batterie et doivent minimiser leur consommation énergétique.
-    \item \textbf{Bande passante} : La transmission de grandes quantités de données brutes vers un serveur central peut saturer le réseau et consommer beaucoup d'énergie.
-    \item \textbf{Confidentialité} : La transmission de données brutes peut poser des problèmes de vie privée, notamment dans des applications médicales ou de surveillance.
+    \item \textbf{Énergie} : Les capteurs, notamment ceux présents dans un environnement difficile, sont compliqués à alimenter (nécessité de batterie, panneaux solaires...)
+    \item \textbf{Bande passante} : La transmission d'un volume important de données peut être difficile si le réseau propose un débit en bande passante limité. De plus, cela consomme de l'énergie pour envoyer une quantité de données importante. 
+    \item \textbf{Confidentialité} : La transmission des données telle quelle peut facilement être récupérée par un tiers indésirable, ce qui peut poser des problèmes dans des contextes militaire ou médical. 
 \end{itemize}
 
 \subsection{Apprentissage centralisé versus apprentissage fédéré}
 
 Face à ces défis, deux paradigmes d'apprentissage automatique se distinguent : l'apprentissage centralisé et l'apprentissage fédéré.
 
+Pour faire face à toutes nos données, plusieurs possibilités d'apprentissage automatique s'ouvrent. Parmi toutes les possibilités, il y a deux candidats qui tirent leur épingle du jeu : l'apprentissage centralisé et l'apprentissage fédéré.
+
 \subsubsection{Apprentissage centralisé}
 
-Dans l'approche centralisée traditionnelle, toutes les données sont transmises depuis les capteurs vers un serveur central où l'entraînement du modèle est effectué de manière globale. Cette approche présente plusieurs avantages :
+L'apprentissage centralisé est l'approche traditionnelle en apprentissage automatique. Son fonctionnement repose sur le fait que chaque capteur envoie ses données à un serveur central qui s'occupe de faire l'entraînement de manière globale. 
+Cette approche a plusieurs avantages :
+
 \begin{itemize}
-    \item \textbf{Haute précision} : L'accès à l'ensemble des données permet d'entraîner des modèles très performants.
-    \item \textbf{Convergence stable} : L'optimisation sur un dataset centralisé est généralement plus stable et prévisible.
+    \item \textbf{Précision} : Cette approche permet d'avoir une très bonne précision 
+    \item \textbf{Convergence stable} : L'apprentissage sur un ensemble de données centralisé donne des résultats plus stables au fur et à mesure de l'entraînement
 \end{itemize}
 
-Cependant, l'apprentissage centralisé souffre de limitations importantes dans le contexte IoT :
+Cependant, cette approche possède des désavantages, notamment liés au contexte de l'IoT :
 \begin{itemize}
-    \item \textbf{Problèmes de confidentialité} : La transmission de toutes les données brutes vers un serveur central expose les informations sensibles.
-    \item \textbf{Bande passante excessive} : Le transfert de grandes quantités de données brutes consomme énormément de bande passante réseau.
-    \item \textbf{Latence élevée} : La collecte et le traitement centralisé introduisent des délais importants dans le système.
+    \item \textbf{Condidentialié} : La transmission de toutes les données vers un serveur central expose les données à n'importe quels tiers indésirables.
+    \item \textbf{Bande passante} : Le transfert de grandes quantités de données consomme énormément de bande passante réseau.
+    \item \textbf{Latence élevée} : La collecte et le traitement centralisé introduisent des délais importants.
 \end{itemize}
 
 \subsubsection{Apprentissage fédéré}
 
-L'apprentissage fédéré propose une alternative décentralisée où l'entraînement se déroule localement sur chaque capteur. Plutôt que de transmettre les données brutes, seuls les poids du modèle sont partagés et agrégés au niveau global. Cette approche présente des avantages considérables pour les applications IoT :
+L'apprentissage fédéré propose une alternative décentralisée où l'entraînement se déroule localement sur chaque capteur. Plutôt que de transmettre les données, les capteurs vont transmettre les poids qui seront agrégés sur le serveur central.
+Cela présente les avantages suivants :
 \begin{itemize}
-    \item \textbf{Bande passante réduite} : Seuls les paramètres du modèle sont transmis, ce qui représente un volume de données bien inférieur aux données brutes.
-    \item \textbf{Préservation de la confidentialité} : Les données sensibles restent sur les capteurs et ne sont jamais transmises.
-    \item \textbf{Adapté aux contraintes IoT} : L'approche est naturellement compatible avec les limitations des réseaux de capteurs.
+    \item \textbf{Bande passante réduite} : Seuls les poids du modèle sont transmis, ce qui représente un volume de données bien inférieur aux données des capteurs.
+    \item \textbf{Confidentialité} : Les données sensibles restent sur les capteurs et ne sont jamais transmises.
 \end{itemize}
 
 Néanmoins, l'apprentissage fédéré comporte aussi des inconvénients :
 \begin{itemize}
     \item \textbf{Données non-IID} : L'hétérogénéité des données locales peut ralentir la convergence et réduire la performance du modèle global.
-    \item \textbf{Hétérogénéités} : Les différences de capacité de calcul et de qualité des données entre capteurs peuvent compliquer l'agrégation.
 \end{itemize}
 
 \section{Problématique et Solution Proposée}
 
 \subsection{Le défi posé par les données non étiquetées}
 
-Dans le contexte des réseaux IoT, nous sommes confrontés à un défi particulièrement complexe. Les capteurs déployés génèrent des \textbf{données non étiquetées en continu}, souvent dans des environnements difficiles d'accès où l'intervention humaine est rare ou impossible. Par exemple, des capteurs installés dans des zones reculées, des infrastructures industrielles ou des environnements hostiles peuvent être physiquement inaccessibles pour une annotation manuelle.
-
-Cette situation rend l'approche supervisée traditionnelle totalement inadaptée. Sans étiquettes, il est impossible d'entraîner des classificateurs supervisés classiques qui nécessitent des paires (donnée, étiquette) pour l'apprentissage. De plus, le coût et la complexité logistique de l'annotation manuelle à grande échelle sont prohibitifs.
-
+Comme dit précédemment, dans le contexte de l'IoT, nous sommes dans un environnement particulièrement complexe. Les capteurs génèrent des données qui ne sont pas ou peu étiquetées, et ce dans des endroits qui peuvent être difficiles d'accès (intervention humaine difficile voire impossible), ce qui rend une labélisation manuelle délicate. 
+Cette situation rend l'utilisation de l'apprentissage supervisé traditionnel impossible (cette approche nécessitant de nombreuses données labellisée).
 \subsection{La solution novatrice proposée}
 
-Pour surmonter ces obstacles, l'article propose une approche innovante qui combine trois éléments clés :
+Pour surmonter ces obstacles, l'article propose une approche innovante qui combine trois éléments :
 
 \begin{enumerate}
-    \item \textbf{Federated Learning (apprentissage décentralisé)} : L'entraînement se fait localement sur chaque capteur, ce qui préserve la confidentialité des données et réduit drastiquement la bande passante nécessaire.
+    \item \textbf{L'apprentissage fédéré} L'utilisation de l'apprentissage fédéré afin de combler les problèmes de bande passante et de confidentialité.
     
-    \item \textbf{Autoencodeur pour données non étiquetées} : Plutôt que d'utiliser un apprentissage supervisé classique qui nécessite des labels, l'approche repose sur des autoencodeurs capables d'apprendre des représentations utiles de manière non supervisée. L'autoencodeur apprend à reconstruire l'image d'entrée, ce qui force le modèle à extraire des caractéristiques pertinentes sans avoir besoin d'annotations.
+    \item \textbf{Autoencodeur} : Plutôt que d'utiliser un apprentissage supervisé classique qui nécessite des labels, l'approche repose sur des autoencodeurs capables d'apprendre des features de manière non supervisée. 
     
-    \item \textbf{Agrégation décentralisée via UAV (drone)} : Un véhicule aérien sans pilote (UAV) se déplace de capteur en capteur pour collecter les poids des modèles locaux, les agréger, puis redistribuer le modèle global mis à jour. Cette approche est particulièrement adaptée aux environnements où les capteurs sont géographiquement dispersés et où une infrastructure réseau centralisée n'est pas disponible.
+    \item \textbf{Agrégation décentralisée via UAV (drone)} : Un UAV se déplace de capteur en capteur pour collecter les poids des modèles locaux, les agréger, puis redistribuer le modèle global mis à jour. Cette approche est particulièrement adaptée aux capteurs dans des environnements difficiles d'accès. 
 \end{enumerate}
 
 Cette solution permet de combiner les avantages de l'apprentissage fédéré (confidentialité, efficacité de la bande passante) avec la capacité de traiter des données non étiquetées grâce aux autoencodeurs, tout en utilisant un UAV pour faciliter la communication dans des environnements difficiles.
@@ -344,7 +346,7 @@ Cette chaîne d'optimisation permet de réduire significativement le volume de d
 
 \section{Résultats Expérimentaux}
 
-Les expérimentations menées comparent les performances du modèle basé sur autoencodeur avec un modèle supervisé classique, afin d'évaluer le compromis entre performance et capacité à fonctionner sans labels.
+Les expérimentations ont été effectuées sur deux scénarios différents. Le premier scénario est avec un modèle supervisé classique afin d'avoir une base de comparaison. Le deuxième scénario est via le modèle développé dans l'article.
 
 \subsection{Analyse des matrices de confusion}
 
@@ -352,17 +354,27 @@ Les matrices de confusion fournissent une visualisation détaillée des performa
 
 \subsubsection{Modèle supervisé}
 
-Le modèle supervisé entraîné de manière classique avec des labels présente les caractéristiques suivantes :
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/confusion_supervise.png}
+    \caption{Matrice de confusion pour le modèle supervisé}
+\end{figure}
+
+La matrice de confusion sur le modèle supervisé montre que
 \begin{itemize}
-    \item \textbf{Classes mieux séparées} : Les prédictions sont concentrées sur la diagonal de la matrice, indiquant une forte capacité à distinguer correctement les différentes classes.
+    \item \textbf{Classes mieux séparées} : Les prédictions sont concentrées sur le diagonal de la matrice, ce qui montre que les classes sont bien distinguées les unes des autres.
     \item \textbf{Moins d'erreurs de classification} : Le nombre de faux positifs et faux négatifs est relativement faible.
-    \item \textbf{Prédictions nettes et confiantes} : Le modèle produit des probabilités élevées pour la classe correcte.
-    \item \textbf{Loss plus faible} : L'optimisation directe pour la classification produit des valeurs de loss inférieures.
 \end{itemize}
 
 \subsubsection{Autoencodeur avec classification}
 
-Le modèle basé sur autoencodeur montre des résultats différents :
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/confusion_autoencoder.png}
+    \caption{Matrice de confusion pour le modèle avec l'autoencodeur}
+\end{figure}
+
+Le modèle basé sur l'autoencodeur montre des résultats différents :
 \begin{itemize}
     \item \textbf{Confusion accrue entre certaines classes} : La matrice présente plus d'éléments hors diagonale, indiquant des erreurs de classification plus fréquentes.
     \item \textbf{Prédictions moins confiantes} : Les probabilités sont moins affirmées, reflétant une incertitude plus élevée.
@@ -372,35 +384,41 @@ Le modèle basé sur autoencodeur montre des résultats différents :
 
 \subsubsection{Interprétation}
 
-La comparaison montre clairement que le modèle supervisé offre une meilleure précision de classification, ce qui est attendu puisqu'il est directement optimisé pour cette tâche avec des labels disponibles. Cependant, l'autoencodeur, bien que moins précis, reste une solution viable et même nécessaire dans les contextes IoT où les labels ne sont pas disponibles. Le compromis entre précision et capacité à fonctionner sans supervision est au cœur de l'approche proposée.
+La comparaison montre clairement que le modèle supervisé offre une meilleure précision de classification, ce qui est attendu puisqu'il est directement optimisé pour cette tâche avec des labels disponibles. Cependant, l'autoencodeur, malgré une précision moins bonne, reste une solution viable dans le contextes IoT où les labels ne sont pas disponibles. 
 
 \subsection{Analyse t-SNE des représentations}
 
-La technique t-SNE (t-distributed Stochastic Neighbor Embedding) est utilisée pour visualiser en 2D les représentations apprises dans l'espace latent des deux modèles.
-
 \subsubsection{Modèle supervisé}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/tsne_supervise.png}
+    \caption{T-SNE du modèle supervisé}
+\end{figure}
 
 La visualisation t-SNE du modèle supervisé révèle :
 \begin{itemize}
     \item \textbf{Clusters bien séparés} : Les points correspondant à chaque classe forment des groupes distincts et compacts.
-    \item \textbf{Frontières nettes entre classes} : Il y a peu de chevauchement entre les différentes régions de l'espace latent.
-    \item \textbf{Représentations spécialisées} : L'espace latent est fortement structuré pour maximiser la séparabilité des classes.
-    \item \textbf{Optimisation pour la classification} : L'entraînement supervisé force le modèle à créer des représentations distinctives.
+    \item \textbf{Frontières nettes entre classes} : De manière générale, on distingue assez bien les frontières des différentes classes. 
 \end{itemize}
 
 \subsubsection{Autoencodeur}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/tsne_autoencoder.png}
+    \caption{T-SNE du modèle avec l'autoencodeur}
+\end{figure}
+
 Pour l'autoencodeur, la visualisation t-SNE montre :
 \begin{itemize}
     \item \textbf{Clusters plus diffus} : Les groupes de classes sont moins compacts et présentent plus de dispersion.
-    \item \textbf{Représentations plus générales} : L'espace latent capture des caractéristiques générales utiles pour la reconstruction, pas uniquement pour la discrimination.
-    \item \textbf{Apprentissage sans labels} : Les structures émergent naturellement de l'objectif de reconstruction, sans guidance explicite par les classes.
-    \item \textbf{Robustesse potentielle au non-IID} : Les représentations moins spécialisées peuvent mieux généraliser à de nouvelles distributions de données.
+    \item \textbf{Représentations plus générales} : On repère moins les frontières entre les différentes classes. 
 \end{itemize}
 
 \subsubsection{Implications}
 
-L'analyse t-SNE confirme que le modèle supervisé apprend des représentations hautement discriminantes, optimales pour la classification. En revanche, l'autoencodeur développe des représentations plus générales qui capturent l'essence de la reconstruction d'image. Bien que ces représentations soient moins optimales pour la classification pure, elles présentent l'avantage d'être apprises sans supervision et pourraient être plus robustes face à des changements de distribution, un atout important dans les environnements IoT hétérogènes.
+L’analyse t-SNE montre clairement que le modèle supervisé apprend des features très discriminantes, donc parfaites pour la classification. À l’inverse, l’autoencodeur apprend des représentations plus générales, centrées sur la reconstruction de l’image. Elles sont donc moins optimisées pour de la classification pure, mais l’avantage c’est qu’elles sont apprises sans supervision. Du coup, elles ont potentiellement une meilleure robustesse quand la distribution des données change, ce qui est particulièrement intéressant dans des environnements IoT hétérogènes.
 
 \section{Conclusion}
 
